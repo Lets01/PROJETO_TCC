@@ -1,7 +1,8 @@
+
 clear
 
 %Abrir imagem
-IMG = imread('./IMAGENS/png/in04.png');
+IMG = imread('in19.png');
 
 %Valores dos pixels da imagem atribuídos à matriz IMG1
 IMG1=IMG(:,:,1);
@@ -16,19 +17,7 @@ M = Dist_linha*0.45;
 Col_result = M*2; %
 
 %Tamanho da imagem considerando apenas o aspectro R
-[Lin, Col]=size(IMG1);
-
-%Percorrer todos os pixels da imagem origem
-% for i=1:Lin
-% 	for j=1:Col
-%             %Cálculo da coordenada (X,Y) da imagem origem
-%             x=i;
-%             y=j;
-%             %Atribuir valores
-%                 %IM_out1(cordx,cordy)=IM_in(cordx,cordy)
-%                 
-% 	end
-% end
+%[Lin, Col]=size(IMG1);
 
 %verifica apenas onde a cor vermelha esta, dessa forma exclui todo o resto;
 linha = IMG(:,:,1) == 255;
@@ -37,7 +26,7 @@ linha = IMG(:,:,1) == 255;
 %Função que identifica objetos em uma imagem em preto e branco;
 %Retorna duas variaveis:
 %B --> representa o contorno dos objetos;
-%L --> matriz de indices, em que cada elemento da matriz é um inteiro,
+%A --> matriz de indices, em que cada elemento da matriz é um inteiro,
 %indicando de qual objeto da matriz esse elemento faz parte;
 %'noholes' procura apenas pelos limites do objetos
 [B,A] = bwboundaries(linha, 'noholes');
@@ -48,7 +37,33 @@ cont = regionprops(A, 'Area');
 
 %qtd_linhas retorna quantas linhas a imagem possui, desconsiderando onjetos
 %muito pequenos.
-qtd_linha = sum([cont.Area] > 10);
+qtd_linha = sum([cont.Area] > 50);
+
+[Lin, Col]=size(A);
+
+%n=Lin;
+%alocando o espaço necessário
+% cord.x=zeros(n,n);
+% cord.y=zeros(n,n);
+
+% aux = 0;
+% ver_l=0;
+%Percorrer todos os pixels da imagem origem
+for i=1:Lin
+	for j=1:Col
+        %Cálculo da coordenada (X,Y) da imagem origem... verificar...
+        %Tenho uma matriz que identifica cada linha usando numeros inteiros
+        %Como devo tratar isso...
+%         if(A(i,j)~= 0)
+%            %Atribuir valores para os pontos em forma de matriz
+%            %cord.x(i,j) = i;
+%            %cord.y(i,j) = j;
+%         else
+%            %cord.x(i,j) = 0;
+%            %cord.y(i,j) = 0;
+%         end     
+	end
+end
 
 %calcula o mapa de pixels mais próximos na forma de uma matriz de índices 
 %idx. Cada elemento de idx contém o índice linear do pixel diferente de 
@@ -68,16 +83,16 @@ for k = 1:length(B)
     area = cont(k).Area;
     
     %filtra objetos pequenos
-    if area > 10
+    if area > 50
         fronteira = B{k};%contorno do objeto;
         %mostra o contorno da linha em preto;
         plot(fronteira(:,2), fronteira(:,1), 'black', 'LineWidth', 1);
         %mostra o texto correspondente a area estilizado;
-        text(fronteira(1,2), fronteira(1,1), sprintf('%.0f',area),...
-            'Color', 'white',...
-            'FontSize', 8,...
-            'FontWeight', 'bold',...
-            'BackgroundColor', 'black');
+        %text(fronteira(1,2), fronteira(1,1), sprintf('%.0f',area),...
+        %    'Color', 'white',...
+        %    'FontSize', 8,...
+        %    'FontWeight', 'bold',...
+        %    'BackgroundColor', 'black');
         
     end
 end
