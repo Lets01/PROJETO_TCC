@@ -1,80 +1,56 @@
 clear
+clc
 
-IMG = imread('in19_cut2.png');
-% IMG = imread('in19_cut.png');
-
-IMG1=IMG(:,:,1);
+IMG = imread('IMG_R/in19_cut2.png');
 
 linha = (IMG(:,:,1) == 255);
-
-%Função que identifica objetos em uma imagem em preto e branco;
-%B --> representa o contorno dos objetos;
-%A --> matriz de indices, em que cada elemento da matriz é um inteiro,
-%indicando de qual objeto da matriz esse elemento faz parte;
-%'noholes' procura apenas pelos limites do objetos
-[B,A] = bwboundaries(linha, 'noholes');
+linha2 = bwmorph(linha,'skel',Inf);
+[B,A] = bwboundaries(linha2, 'noholes');
 
 hold on
-    for k = 1:length(B)
-       F = B{k};
-
-       [X] = F(:,2);
-       [Y] = F(:,1);
-
-       %plot( X ,Y, 'b', 'LineWidth', 0.2);  
-       %grid on;
-
-       for s=1:length(X)  
-
-           [P_ant.X(s)] = X(s);
-           [P_ant.Y(s)] = Y(s);
-
-           [P_prox.X(s)] = X(s+1);
-           [P_prox.Y(s)] = Y(s+1);
-
-           % Para quando voltar no contorno
-            if (P_prox.X(s) < P_ant.X(s))
+    for k = 1:length(B)       
+       for s=1:length(B{k}(:,2)) 
+           
+            if (B{k}(s+1,2) < B{k}(s,2))
                 break;
             end
-
-           % Coeficiente angular 1
-           A1 = (P_prox.Y(s) - P_ant.Y(s))/(P_prox.X(s) - P_ant.X(s));
            
-           % Coeficiente linear 1
-           B1 = ((P_ant.Y(s) - (A1*(P_ant.X(s)))));
-
-           % Coordeanada anterior de X e a proxima coordenada de X
-           Xn = [P_ant.X(s) P_prox.X(s)];
+           Var_X = B{k}(s+1,2)-B{k}(s,2); %variação x
+           Var_Y = B{k}(s+1,1)-B{k}(s,1); %variacao y
+           [A1] = (Var_Y)/(Var_X);
+           [Xn] = [B{k}(s,2) B{k}(s+1,2)];
+           [Yn] = [B{k}(s,1) B{k}(s+1,1)];          
+           plot(Xn, Yn, 'b');
+           Multi=1; % Multiplicador que controla a espessura
            
-           % Equação da reta
-           Yn = A1*(Xn)+B1;
+           if A1 ~= 0
+               Alpha= atan(A1);
+               P=sqrt(Var_Y.^2+Var_X.^2);
+               
+               if A1 < 0
+                   LY=Multi*abs(P*sin(Alpha));
+                   LX=Multi*abs(P*cos(Alpha));
+               end
+               
+               if A1 > 0
+                  LY=-Multi*abs(P*sin(Alpha));
+                  LX=Multi*abs(P*cos(Alpha)); 
+               end
+               
+               Xn2Atual= [B{k}(s,2)-LX B{k}(s,2)+LX];
+               Yn2Atual= [B{k}(s,1)-LY B{k}(s,1)+LY];
+               plot(Xn2Atual, Yn2Atual,'r')
+           end
            
-           % Mostra as retas
-           plot(Xn, Yn);
+           if Var_Y == 0
+               LX=0;
+               LY=sqrt(P)*Multi;
+               Xn3 = [B{k}(s,2) B{k}(s,2)];
+               Yn3 =[B{k}(s,1)-LY B{k}(s,1)+LY];
+               plot(Xn3, Yn3,'g');
+           end
            
-           %--------------------------------------------------
-           % Tentativa para encontrr a reta ortogonal 
-           %--------------------------------------------------
-           
-           %ponto médio...
-           %[XM] = (P_prox.X(s) + P_ant.X(s))/2;
-           %[YM] = (P_prox.Y(s) + P_ant.Y(s))/2;
-           %PM = [XM YM];
-           %Cord = [YM+5 YM-5];
-           
-           % Encontrando a função inversa
-           A_inv = (-1/A1);
-           
-           % Coeficiente linear
-           B2 = ((P_prox.Y(s)-(A_inv*(P_ant.X(s)))));
-
-           % Equação da reta
-           Yn2 = A_inv*(Xn)+B2;
-           
-           plot(Xn, Yn2);
-           
-           spy(A);% Mostra os pontos azuis
        end
     end
+    spy(A);
 hold off
-
