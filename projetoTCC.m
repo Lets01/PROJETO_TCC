@@ -1,7 +1,7 @@
 clear
 clc
 
-IMG = imread('in04_cut.png');
+IMG = imread('in19_cut.png');
 
 linha = (IMG(:,:,1) == 255);
 linha2 = bwmorph(linha,'skel',Inf);
